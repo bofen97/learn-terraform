@@ -13,7 +13,16 @@ terraform {
     encrypt        = true
   }
 }
+data "terraform_remote_state" "db" {
+  backend = "s3"
 
+  config = {
+    
+    bucket = "terraform-up-and-running-state-ty1997"
+    key  = "stage/data-stores/mysql/terraform.tfstate"
+    region = "us-east-1"
+  }
+}
 resource "aws_launch_template" "example" {
   name_prefix   = "terraform-example-"
   image_id      = "ami-0fc5d935ebf8bc3bc"
@@ -21,12 +30,11 @@ resource "aws_launch_template" "example" {
 
   vpc_security_group_ids = [aws_security_group.instance.id]
 
-  user_data = base64encode(<<-EOF
-              #!/bin/bash
-              echo "Hello, World" > index.html
-              nohup busybox httpd -f -p ${var.server_port} &
-              EOF
-  )
+  user_data = templatefile("user-data.sh", {
+    server_port = var.server_port
+    db_address  = data.terraform_remote_state.db.outputs.address
+    db_port     = data.terraform_remote_state.db.outputs.port
+  })
 
   lifecycle {
     create_before_destroy = true
