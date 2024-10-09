@@ -1,0 +1,17 @@
+form files
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+crash.log
+crash.*.log
+**/terraform.tfstate
+**/terraform.tfstate.backup
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# Ignore lock files
+.terraform.lock.hcl
